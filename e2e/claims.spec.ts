@@ -142,6 +142,11 @@ test.describe('the tweak ladder shows the operation the cipher performs', () => 
 
   test('the XEX sandwich the page prints is internally consistent and matches the platter', async ({ page }) => {
     await boot(page);
+    // Block 7, not the default block 0. At j = 0 the tweak is T_0 itself and
+    // alpha never runs, so a broken ladder is invisible here — which a mutation
+    // of `tweakForBlock` demonstrated by leaving this test green.
+    await page.locator('#act-disk .block-cell').nth(7).click();
+    await expect(page.locator('#ladder')).toContainText('current  j = 7');
     const rows = await page.locator('#act-disk .ladder').last().locator('.ladder-row').allInnerTexts();
     const find = (label: string): Uint8Array => {
       const row = rows.find((r) => r.replace(/\s+/g, ' ').toLowerCase().includes(label.toLowerCase()));
@@ -149,7 +154,7 @@ test.describe('the tweak ladder shows the operation the cipher performs', () => 
       return parseHex(row.replace(/\s+/g, ' '));
     };
     const p = find('P (as written)');
-    const t = find('T0');
+    const t = find('T7');
     const masked = find('P ⊕ T');
     const aes = find('AES-K1');
     const c = find('⊕ T again');

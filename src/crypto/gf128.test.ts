@@ -60,9 +60,17 @@ describe('multiply by alpha in GF(2^128)', () => {
   it('is injective, so no two block indices in a sector share a tweak', () => {
     // 32 blocks per 512-byte sector: alpha^0 .. alpha^31 must all be distinct,
     // which is what makes each block position its own tweak.
+    // Iterated rather than `mulAlphaPow(seed, j)` per j: that form is O(n^2)
+    // and took 6.4s under load here, which is over Vitest's default 5s timeout
+    // — a test that fails on a busy machine is not a gate. `mulAlphaPow` has
+    // its own test below.
     const seed = crypto.getRandomValues(new Uint8Array(16));
     const seen = new Set<string>();
-    for (let j = 0; j < 4096; j++) seen.add(toHex(mulAlphaPow(seed, j)));
+    let acc: Uint8Array = seed;
+    for (let j = 0; j < 4096; j++) {
+      seen.add(toHex(acc));
+      acc = mulAlpha(acc);
+    }
     expect(seen.size).toBe(4096);
   });
 
