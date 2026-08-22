@@ -1,4 +1,5 @@
 import { XTS_FAILURE_CODES } from '../crypto/xts.js';
+import { NEGATIVE_CLAIM, NEGATIVE_CLAIM_ID } from '../volume/negative-claim.js';
 import { SECTOR_BYTES, SECTOR_COUNT } from '../volume/types.js';
 import { h, replace } from './dom.js';
 import type { LabContext } from './state.js';
@@ -42,9 +43,10 @@ export function scopeCard(): HTMLElement {
   return h('section', { class: 'card', id: 'scope', 'aria-labelledby': 'scope-title' }, [
     h('h2', { id: 'scope-title', text: 'Scope, and what this does not prove' }),
 
-    h('h3', { text: 'The negative claim this lab exists to demonstrate' }),
+    h('h3', { text: `The negative claim this lab exists to demonstrate (${NEGATIVE_CLAIM_ID})` }),
+    h('p', { 'data-negative-claim': NEGATIVE_CLAIM_ID, text: NEGATIVE_CLAIM }),
     h('p', {
-      text: 'XTS-based, confidentiality-only full-disk encryption does not detect adversarial modification or rollback. Acts 2 and 3 are the evidence: every read returns bytes, no read raises anything, and the mode has no failure code that could apply.',
+      text: 'Acts 2 and 3 are the evidence fixture: drive the volume into a damaged or rolled-back state and every check XTS actually performs still reports success, with no failure code available to raise. The claim is printed inside that state rather than only here.',
     }),
     h('p', {
       class: 'readout-note',

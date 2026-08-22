@@ -221,6 +221,126 @@ test.describe('NEG-1: XTS reports nothing about an edited ciphertext', () => {
   });
 });
 
+/**
+ * §4.1d — the negative claim, tested as a result rather than left as prose.
+ *
+ * The fixture is a state the page can really be driven into where EVERY check
+ * the construction performs reports success and the named property is violated
+ * anyway. Three things are asserted: that the fixture is reachable through the
+ * UI, that everything in it is green, and that the limitation is on screen in
+ * that state — visible, not in the README, not behind a disclosure.
+ */
+test.describe('NEG-1 as an evidence fixture', () => {
+  /** Reach the fixture: a modified sector whose read still passes every check. */
+  async function reachFixture(page: Page): Promise<void> {
+    await page.fill('#flip-sector', '7');
+    await page.fill('#flip-byte', '20');
+    await page.fill('#flip-bit', '3');
+    await page.getByRole('button', { name: 'Flip this bit' }).click();
+    await expect(page.locator('#flip-readout')).toContainText('DECRYPTED — AND MODIFIED');
+  }
+
+  test('1. the fixture is reachable, and 2. every check the construction performs is green', async ({ page }) => {
+    await boot(page);
+    await reachFixture(page);
+    const panel = page.locator('#flip-readout');
+
+    // Enumerated from what the page PAINTED, not from a flag this test set.
+    // Each of these li elements carries the outcome of a check that was really
+    // run against the real ciphertext when the panel rendered.
+    const performed = panel.locator('[data-check]');
+    const count = await performed.count();
+    expect(count, 'the fixture must exercise at least one real check').toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      await expect(performed.nth(i)).toHaveAttribute('data-check', 'pass');
+      await expect(performed.nth(i).locator('[data-verdict="check"]')).toContainText('PASS');
+    }
+    // Nothing anywhere on the page reports a failed check in this state. If any
+    // did, the fixture would be demonstrating the mechanism working.
+    await expect(page.locator('[data-check="fail"]')).toHaveCount(0);
+
+    // The construction's own report is a success, and names no code.
+    const reportText = (await panel.locator('.readout-col').first().innerText()).replace(/\s+/g, ' ');
+    expect(reportText).toContain('READ OK');
+    expect(reportText).toContain('failure code none — there is none to give');
+    expect(reportText).toContain('errors raised 0');
+
+    // ...and the property is violated anyway.
+    await expect(panel).toContainText('CORRUPTED (UNDETECTED)');
+    const damaged = Number(
+      (await panel.locator('.readout-line', { hasText: 'blocks differing' }).innerText())
+        .replace(/\s+/g, ' ')
+        .match(/(\d+) of 32/)?.[1],
+    );
+    expect(damaged).toBeGreaterThan(0);
+  });
+
+  test('the absence of a code is rendered, not merely implied', async ({ page }) => {
+    await boot(page);
+    await reachFixture(page);
+    const missing = page.locator('#flip-readout [data-missing-check]');
+    // Two checks the construction does not have: authenticity and freshness.
+    await expect(missing).toHaveCount(2);
+    await expect(missing.nth(0)).toContainText('NO SUCH CHECK');
+    await expect(missing.nth(1)).toContainText('NO SUCH CHECK');
+    const names = await missing.evaluateAll((els) => els.map((e) => e.getAttribute('data-missing-check')));
+    expect(names).toEqual(['Data authenticity', 'Freshness']);
+  });
+
+  test('3. the limitation is on screen in that state, visible and not behind a disclosure', async ({ page }) => {
+    await boot(page);
+    // Before the fixture is reached, the claim is not being made about a state
+    // that does not exist yet.
+    await expect(page.locator('#flip-readout [data-negative-claim]')).toHaveCount(0);
+
+    await reachFixture(page);
+    const claim = page.locator('#flip-readout [data-negative-claim="NEG-1"]');
+    await expect(claim).toHaveCount(1);
+    await expect(claim).toBeVisible();
+    await expect(claim).toContainText(
+      'XTS-based, confidentiality-only full-disk encryption does not detect adversarial modification or rollback.',
+    );
+
+    // Not behind a disclosure, and inside the panel that holds the fixture.
+    const insideDetails = await claim.evaluate((el) => !!el.closest('details'));
+    expect(insideDetails, 'the negative claim must not be behind a disclosure').toBe(false);
+    const insideFixture = await claim.evaluate((el) => !!el.closest('#act-flip'));
+    expect(insideFixture, 'the claim must be tied to the state that demonstrates it').toBe(true);
+
+    // The scope card quotes the SAME sentence, from the same constant.
+    const scopeClaim = await page.locator('#scope [data-negative-claim="NEG-1"]').innerText();
+    expect(scopeClaim.trim()).toBe((await claim.locator('.neg-claim-text').innerText()).trim());
+  });
+
+  test('the claim retires with its fixture: repair the sector and it is gone', async ({ page }) => {
+    await boot(page);
+    await reachFixture(page);
+    await expect(page.locator('#flip-readout [data-negative-claim]')).toHaveCount(1);
+
+    await page.getByRole('button', { name: /^Sector 7/ }).click();
+    await page.fill('#write-text', 'REPAIRED');
+    await page.getByRole('button', { name: 'Write sector' }).click();
+    await expect(page.locator('#flip-readout')).toContainText('DECRYPTED — AND INTACT');
+    await expect(page.locator('#flip-readout [data-negative-claim]')).toHaveCount(0);
+  });
+
+  test('rollback reaches the same fixture by a different route', async ({ page }) => {
+    await boot(page);
+    await page.fill('#rollback-sector', '9');
+    await page.locator('#rollback-sector').dispatchEvent('change');
+    await page.selectOption('#rollback-version', '1');
+    await page.getByRole('button', { name: 'Restore that image' }).click();
+    const panel = page.locator('#relocate-readout');
+    await expect(panel).toContainText('DECRYPTED — AND ROLLED BACK');
+    await expect(panel).toContainText('SUCCEEDS CLEANLY (STALE)');
+    const performed = panel.locator('[data-check]');
+    const count = await performed.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) await expect(performed.nth(i)).toHaveAttribute('data-check', 'pass');
+    await expect(panel.locator('[data-negative-claim="NEG-1"]')).toHaveCount(1);
+  });
+});
+
 test.describe('relocation and rollback are different things, and the page says so', () => {
   test('a relocated sector is CORRUPTED (UNDETECTED); a rolled-back one succeeds cleanly', async ({ page }) => {
     await boot(page);

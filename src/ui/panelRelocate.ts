@@ -141,7 +141,7 @@ export function mountRelocatePanel(ctx: LabContext): { root: HTMLElement; refres
     if (history.some((entry) => String(entry.version) === previous)) versionSelect.value = previous;
     rollbackButton.disabled = history.length < 2;
 
-    replace(readoutHost, [readout(volume.read(ctx.state.selectedSector))]);
+    replace(readoutHost, [readout(volume, volume.read(ctx.state.selectedSector))]);
 
     // The tweak mismatch, printed rather than described: the tweak that made
     // those bytes, beside the tweak they are now being read under.

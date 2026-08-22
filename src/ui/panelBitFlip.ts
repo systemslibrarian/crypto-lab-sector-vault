@@ -61,7 +61,7 @@ export function mountBitFlipPanel(ctx: LabContext): { root: HTMLElement; refresh
   function refresh(): void {
     const sector = sectorInput.value() ?? ctx.state.selectedSector;
     const read = ctx.state.volume.read(sector);
-    replace(readoutHost, [readout(read)]);
+    replace(readoutHost, [readout(ctx.state.volume, read)]);
 
     const damaged = read.changedBlocks;
     const focus = damaged.length ? damaged[0] : ctx.state.selectedBlock;

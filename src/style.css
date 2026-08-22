@@ -479,6 +479,63 @@ h4 {
 
 /* ── The two-column read-out ───────────────────────────────────────────── */
 
+.readout-headline {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0.9rem 0 0;
+}
+.readout-headline-label {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+
+.checks {
+  list-style: none;
+  margin: 0.6rem 0 0.2rem;
+  padding: 0;
+}
+.check-row-item {
+  margin-bottom: 0.45rem;
+}
+.check-detail {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* The negative claim, printed inside the state that demonstrates it. */
+.neg-claim {
+  border: 1px solid var(--alarm);
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  margin: 0.2rem 0 0;
+  background-color: var(--inset);
+}
+.neg-claim-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--alarm);
+}
+.neg-claim-text {
+  margin: 0.3rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.neg-claim-evidence {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+}
+
+
 .readout {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));

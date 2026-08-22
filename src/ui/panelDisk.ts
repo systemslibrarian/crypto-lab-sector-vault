@@ -161,7 +161,7 @@ export function mountDiskPanel(ctx: LabContext): { root: HTMLElement; refresh: (
       writeInput.value = history.length ? history[history.length - 1].label : '';
     }
 
-    replace(readoutHost, [readout(read)]);
+    replace(readoutHost, [readout(volume, read)]);
 
     replace(textHost, [
       h('h4', { text: `Sector ${selectedSector}, decrypted — first 128 bytes` }),

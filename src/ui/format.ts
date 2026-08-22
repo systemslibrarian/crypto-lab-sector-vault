@@ -27,8 +27,10 @@ export const TONE_INFO: Tone = { glyph: '●', fill: 'fill-info' };
  * `aria-hidden` and the word is the accessible content, so the state survives
  * grayscale, deuteranopia and a screen reader equally.
  */
-export function verdictPill(tone: Tone, label: string): HTMLElement {
-  return h('span', { class: `verdict ${tone.fill}` }, [
+export type VerdictKind = 'headline' | 'check' | 'missing-check' | 'construction-report' | 'ground-truth';
+
+export function verdictPill(tone: Tone, label: string, kind: VerdictKind = 'ground-truth'): HTMLElement {
+  return h('span', { class: `verdict ${tone.fill}`, 'data-verdict': kind }, [
     h('span', { class: 'verdict-glyph', 'aria-hidden': 'true', text: tone.glyph }),
     h('span', { text: label }),
   ]);

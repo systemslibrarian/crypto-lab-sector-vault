@@ -307,8 +307,15 @@ export async function boot(page: Page, theme: 'dark' | 'light'): Promise<void> {
   await expect(page.locator('#act-disk .block-cell')).toHaveCount(32);
   await expect(page.locator('#act-disk .sector-tile[aria-pressed="true"]')).toHaveCount(1);
   await expect(page.locator('#act-disk .sector-tile[aria-pressed="true"] .tile-id')).toHaveText('SECTOR 09');
-  await expect(page.locator('#disk-readout')).toContainText('INTACT');
+  await expect(page.locator('#disk-readout')).toContainText('DECRYPTED — AND INTACT');
   await expect(page.locator('#disk-readout')).toContainText('none — there is none to give');
+  // The four rows of the check inventory: two the construction really performs
+  // and two it does not have, which is the exhibit rather than an omission.
+  await expect(page.locator('#disk-readout [data-check]')).toHaveCount(2);
+  await expect(page.locator('#disk-readout [data-missing-check]')).toHaveCount(2);
+  // The negative claim belongs to the damaged state, not to the arrival state.
+  await expect(page.locator('[data-negative-claim]')).toHaveCount(1);
+  await expect(page.locator('#scope [data-negative-claim]')).toHaveCount(1);
   await expect(page.locator('#ladder')).toContainText('current  j = 0');
   await expect(page.locator('#ladder-back')).toBeDisabled();
   await expect(page.locator('#write-text')).toHaveValue(/^LEDGER 2026-08-02/);
@@ -804,10 +811,16 @@ export async function driveAllStates(page: Page, theme: string): Promise<void> {
 
   // ── Act 2: the damage states ────────────────────────────────────────────
   await page.locator('#flip-bit-button').click();
+  await expect(page.locator('#flip-readout')).toContainText('DECRYPTED — AND MODIFIED');
   await expect(page.locator('#flip-readout')).toContainText('CORRUPTED (UNDETECTED)');
   await expect(page.locator('#act-disk .block-cell.fill-alarm')).toHaveCount(1);
   await expect(page.locator('.sector-tile .tile-state.s-alarm')).toHaveCount(1);
-  await scanAt('Flip: one bit flipped — an alarm read-out, a damaged block cell and a corrupted tile');
+  // The negative-claim fixture: every performed check green, the claim printed
+  // inside the state that demonstrates it.
+  await expect(page.locator('#flip-readout [data-check="pass"]')).toHaveCount(2);
+  await expect(page.locator('[data-check="fail"]')).toHaveCount(0);
+  await expect(page.locator('#flip-readout [data-negative-claim="NEG-1"]')).toBeVisible();
+  await scanAt('Flip: the NEG-1 fixture — every check green, the claim printed, the data wrong');
 
   await page.fill('#flip-byte', '9999');
   await page.locator('#flip-bit-button').click();
@@ -834,6 +847,8 @@ export async function driveAllStates(page: Page, theme: string): Promise<void> {
   await page.selectOption('#rollback-version', '1');
   await page.locator('#rollback').click();
   await expect(page.locator('#relocate-readout')).toContainText('SUCCEEDS CLEANLY (STALE)');
+  await expect(page.locator('#relocate-readout')).toContainText('DECRYPTED — AND ROLLED BACK');
+  await expect(page.locator('#relocate-readout [data-negative-claim="NEG-1"]')).toBeVisible();
   await scanAt('Rollback: an earlier image restored — a clean read of stale data, and still no code');
 
   // ── Act 4: the watermark grid ───────────────────────────────────────────
