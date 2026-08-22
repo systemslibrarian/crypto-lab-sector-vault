@@ -46,9 +46,27 @@ export interface XtsKeyPair {
   k2: Uint8Array;
 }
 
+export interface XexTrace {
+  /** T_j, the tweak for this block. */
+  tweak: Uint8Array;
+  /** P XOR T — what actually enters AES. */
+  masked: Uint8Array;
+  /** AES-K1 of that. */
+  aesOutput: Uint8Array;
+  /** The finished ciphertext block: AES output XOR T again. */
+  ciphertext: Uint8Array;
+}
+
 export interface XtsCipher {
   /** 128 for XTS-AES-128 (a 256-bit XTS key), 256 for XTS-AES-256. */
   readonly aesBits: 128 | 256;
+  /**
+   * One block's encryption with its intermediates exposed, so the page can
+   * print the XEX sandwich with real values instead of describing it. The
+   * ciphertext it returns is asserted equal to the corresponding slice of
+   * `encryptSector` in `xts.test.ts`.
+   */
+  traceBlockEncrypt(sequenceNumber: bigint, blockIndex: number, plaintextBlock: Uint8Array): XexTrace;
   /** T_0 for a data unit: AES-K2(sequence number as a 128-bit little-endian block). */
   tweakSeed(sequenceNumber: bigint): Uint8Array;
   /** T_j = T_0 * alpha^j, the tweak actually XORed around block j. */
@@ -118,6 +136,19 @@ export function createXtsCipher(key: XtsKeyPair): XtsCipher {
     aesBits,
     tweakSeed,
     tweakForBlock,
+
+    traceBlockEncrypt(sequenceNumber, blockIndex, plaintextBlock) {
+      if (plaintextBlock.length !== XTS_BLOCK_BYTES) {
+        throw new XtsError('MALFORMED_SECTOR', `a trace needs exactly one ${XTS_BLOCK_BYTES}-byte block`);
+      }
+      const tweak = tweakForBlock(sequenceNumber, blockIndex);
+      const masked = xorBytes(plaintextBlock, tweak);
+      // noble's block primitive encrypts IN PLACE and returns the same buffer,
+      // so the trace hands it a copy; otherwise `masked` would be overwritten
+      // with the AES output and the panel would print the same 16 bytes twice.
+      const aesOutput = unsafe.encryptBlock(dataEnc, Uint8Array.from(masked));
+      return { tweak, masked, aesOutput, ciphertext: xorBytes(aesOutput, tweak) };
+    },
 
     encryptSector(sequenceNumber, plaintext) {
       assertDataUnit(plaintext);

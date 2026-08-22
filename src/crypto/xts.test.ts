@@ -246,3 +246,28 @@ describe('what XTS can and cannot refuse', () => {
     }
   });
 });
+
+describe('the XEX trace the page prints', () => {
+  const key = { k1: fromHex('fffefdfcfbfaf9f8f7f6f5f4f3f2f1f0'), k2: fromHex('bfbebdbcbbbab9b8b7b6b5b4b3b2b1b0') };
+  const cipher = createXtsCipher(key);
+
+  it('reproduces the real ciphertext block, so the drawn sandwich cannot drift', () => {
+    const pt = crypto.getRandomValues(new Uint8Array(512));
+    const ct = cipher.encryptSector(6n, pt);
+    for (const block of [0, 1, 13, 31]) {
+      const off = block * XTS_BLOCK_BYTES;
+      const trace = cipher.traceBlockEncrypt(6n, block, pt.subarray(off, off + XTS_BLOCK_BYTES));
+      expect(toHex(trace.ciphertext)).toBe(toHex(ct.subarray(off, off + XTS_BLOCK_BYTES)));
+      expect(toHex(trace.tweak)).toBe(toHex(cipher.tweakForBlock(6n, block)));
+      // Each step is really the previous one XORed with the tweak.
+      for (let i = 0; i < XTS_BLOCK_BYTES; i++) {
+        expect(trace.masked[i]).toBe(pt[off + i] ^ trace.tweak[i]);
+        expect(trace.ciphertext[i]).toBe(trace.aesOutput[i] ^ trace.tweak[i]);
+      }
+    }
+  });
+
+  it('refuses anything that is not exactly one block', () => {
+    expect(() => cipher.traceBlockEncrypt(0n, 0, new Uint8Array(15))).toThrow(XtsError);
+  });
+});
