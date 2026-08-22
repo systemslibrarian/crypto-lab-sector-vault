@@ -4,12 +4,15 @@ import { defineConfig, devices } from '@playwright/test';
  * Everything runs against the PRODUCTION build served by `vite preview`, so
  * what passes here is what ships.
  *
- * Port 4694 is unique to this lab across the fleet. Never the Vite default
+ * Port 4657 is unique to this lab across the fleet. Never the Vite default
  * 4173: with 190 labs side by side, a shared port plus `reuseExistingServer`
  * means a run can silently scan a different lab's preview — that has really
- * happened here.
+ * happened here, and it happened again while this lab was being built, when a
+ * sibling took the port this file first claimed and served ITS bundle to this
+ * suite. 4657 sits in the middle of a wide unclaimed gap rather than at the
+ * first-free or next-above-the-maximum slot everyone else reaches for.
  */
-const PORT = 4694;
+const PORT = 4657;
 const BASE = `http://localhost:${PORT}/crypto-lab-sector-vault/`;
 
 export default defineConfig({
@@ -35,7 +38,13 @@ export default defineConfig({
     // mutation check.
     command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
     url: BASE,
-    reuseExistingServer: !process.env.CI,
+    // Deliberately NOT `!process.env.CI`. Reusing a preview server that is
+    // already listening means the `npm run build` in front of it never runs, so
+    // the suite tests whatever is already in dist/ — a stale bundle, silently.
+    // That is the exact false-green §4.1 of the template warns about, and it
+    // invalidates mutation checking, which is the only way a test is proved to
+    // have teeth. A stray server now produces a loud "port in use" instead.
+    reuseExistingServer: false,
     timeout: 180_000,
   },
 });

@@ -66,7 +66,7 @@ export function mountDiskPanel(ctx: LabContext): { root: HTMLElement; refresh: (
   });
   root.append(
     h('div', { class: 'controls' }, [
-      h('div', { class: 'field' }, [writeLabel, writeInput]),
+      h('div', { class: 'field field-wide' }, [writeLabel, writeInput]),
       writeButton,
     ]),
   );

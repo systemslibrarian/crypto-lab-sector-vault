@@ -41,6 +41,17 @@
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* Border-box everywhere. Without it `width: 100%` on any padded, bordered box
+   resolves to 100% of the container PLUS its own padding and border, which is
+   how the hero's "why it matters" aside came out 387px wide inside a 351px
+   column at 380px and pushed the whole document sideways (WCAG 1.4.10). The
+   gate caught it; this is the fix rather than a narrower aside. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 /* The longhand, not the `background` shorthand: axe and WebKit both miss the
    shorthand when deciding what a text node is actually painted on. */
 html {
@@ -152,6 +163,20 @@ body {
   .cl-hero {
     flex-direction: column;
   }
+  /* The standard snippet gives `.cl-hero-why` an explicit width here but not
+     `.cl-hero-main`. Once the container turns into a column, `align-items:
+     flex-start` sizes children on the cross axis to MAX-CONTENT — so the
+     description stops wrapping and pushes the document sideways. A lab with a
+     short description never notices; this one has a sentence. WCAG 1.4.10. */
+  .cl-hero-main {
+    /* `flex: 1 1 22rem` sets the basis on the MAIN axis, which is the height
+       once this container turns into a column — so the title block was being
+       given 22rem of height and the aside pushed a third of a screen down the
+       page. Reset the basis here as well as the width. */
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+  }
   .cl-hero-why {
     flex-basis: auto;
     width: 100%;
@@ -222,6 +247,14 @@ h4 {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 0;
+  max-width: 100%;
+}
+/* The write box is the one field that wants room. Giving it a whole flex row
+   keeps it from forcing the document sideways at 380px (WCAG 1.4.10) while
+   still sitting beside its button on a desktop row. */
+.field-wide {
+  flex: 1 1 100%;
 }
 .field > label {
   font-size: 0.74rem;
@@ -244,7 +277,8 @@ h4 {
   min-height: 2.4rem;
 }
 #app input[type='text'] {
-  min-width: min(100%, 22rem);
+  width: 100%;
+  min-width: 0;
 }
 #app input[type='number'] {
   width: 6.5rem;
@@ -400,7 +434,14 @@ h4 {
 }
 
 /* State colouring. Every one of these is paired with a glyph and a word in the
-   markup; the fill is never the only carrier. */
+   markup; the fill is never the only carrier.
+
+   `button` is in each selector on purpose. Without it these lose to
+   `#app button.block-cell`'s own background — same id, same class count, but
+   that rule also names a type — and a damaged block cell would take the dark
+   `--*-ink` foreground while keeping the undamaged surface behind it, which
+   measures 1.17:1. That is exactly what the arithmetic contrast oracle caught
+   the first time this gate ran. */
 .s-ok {
   color: var(--ok);
 }
@@ -410,20 +451,30 @@ h4 {
 .s-info {
   color: var(--info);
 }
-#app .fill-ok {
+#app .fill-ok,
+#app button.fill-ok {
   background-color: var(--ok);
   color: var(--ok-ink);
   border-color: var(--ok);
 }
-#app .fill-alarm {
+#app .fill-alarm,
+#app button.fill-alarm {
   background-color: var(--alarm);
   color: var(--alarm-ink);
   border-color: var(--alarm);
 }
-#app .fill-info {
+#app .fill-info,
+#app button.fill-info {
   background-color: var(--info);
   color: var(--info-ink);
   border-color: var(--info);
+}
+/* Anything inside a filled control takes the fill's ink; a dim token over an
+   accent fill is the other half of the same defect. */
+#app .fill-ok *,
+#app .fill-alarm *,
+#app .fill-info * {
+  color: inherit;
 }
 
 /* ── The two-column read-out ───────────────────────────────────────────── */
@@ -588,15 +639,18 @@ table.matrix tbody th {
   border-radius: 2px;
   border: 1px solid var(--border);
 }
-.wm-cell.wm-same {
+/* Defined without `.wm-cell` so the legend swatches, which carry the state
+   class on their own, paint the same three fills the grid does. A legend whose
+   swatches did not match the grid would be worse than no legend. */
+.wm-same {
   color: var(--text-muted);
   background-color: var(--surface-2);
 }
-.wm-cell.wm-changed {
+.wm-changed {
   color: var(--info-ink);
   background-color: var(--info);
 }
-.wm-cell.wm-reverted {
+.wm-reverted {
   color: var(--alarm-ink);
   background-color: var(--alarm);
 }

@@ -93,7 +93,12 @@
         gap: 0.4rem;
         padding: 0.5rem 0.85rem;
         border-radius: 10px;
-        border: 1px solid color-mix(in srgb, var(--accent, #35d6bb) 38%, transparent);
+        /* WCAG 1.4.11. There is no fill, so this border is the whole control
+           boundary, and mixing the PAGE's --accent ties the ratio to each lab's
+           palette: every lab using that form fails, and for a dark accent 3:1 is
+           unreachable at any mix percentage. --cl-ink already mixes toward the
+           bar's near-white ink, so mixing it is accent-independent. */
+        border: 1px solid color-mix(in srgb, var(--cl-ink) 70%, transparent);
         background: transparent;
         color: var(--cl-ink);
         cursor: pointer;
