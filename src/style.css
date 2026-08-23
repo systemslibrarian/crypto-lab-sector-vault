@@ -538,7 +538,12 @@ h4 {
 
 .readout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  /* `minmax(min(100%, 16rem), 1fr)`, not `minmax(16rem, 1fr)`: a bare 16rem
+     track floor is 256px that no viewport can shrink, so the two-column
+     read-out — what XTS reported beside what actually happened — held the
+     document at 286px. The `min(100%, …)` form keeps the two columns wherever
+     they fit and collapses them where they do not. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
   gap: 0.8rem;
   margin: 0.9rem 0;
 }
