@@ -105,30 +105,25 @@ jobs:
         # rejects with "Base branch was modified". That is benign, so try again
         # rather than failing the run over a race.
         run: |
+          merged=""
           for attempt in 1 2 3; do
             if gh pr merge --squash --delete-branch "$PR_URL"; then
-              echo "merged=1" >> "$GITHUB_ENV"
-              exit 0
+              merged=1
+              break
             fi
             echo "merge attempt $attempt failed; base branch may have moved - retrying"
             sleep 15
           done
-          echo "::warning::gate passed but the merge did not land after 3 attempts;"
-          echo "::warning::leaving this PR open - Dependabot will rebase and retry."
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # See the workflow_dispatch note at the top of this file: without this the
-      # bump lands and the published site silently stays on the previous build.
-      # The dispatched run is this same gate-then-deploy pipeline, so a bad merge
-      # still ships nothing.
-      - name: Deploy the merged result
-        if: success()
-        run: |
-          if gh pr view "$PR_URL" --json state --jq .state | grep -q MERGED; then
-            gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+          if [ -z "$merged" ]; then
+            echo "::warning::gate passed but the merge did not land after 3 attempts;"
+            echo "::warning::leaving this PR open - Dependabot will rebase and retry."
+            exit 0
           fi
+          # See the workflow_dispatch note at the top of this file: without this the
+          # bump lands and the published site silently stays on the previous build.
+          # The dispatched run is this same gate-then-deploy pipeline, so a bad merge
+          # still ships nothing.
+          gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
