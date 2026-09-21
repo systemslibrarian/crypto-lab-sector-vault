@@ -12,7 +12,7 @@ import { defineConfig, devices } from '@playwright/test';
  * suite. 4657 sits in the middle of a wide unclaimed gap rather than at the
  * first-free or next-above-the-maximum slot everyone else reaches for.
  */
-const PORT = 4657;
+const PORT = 4205;
 const BASE = `http://localhost:${PORT}/crypto-lab-sector-vault/`;
 
 export default defineConfig({
