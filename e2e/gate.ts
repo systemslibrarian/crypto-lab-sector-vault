@@ -826,7 +826,7 @@ export async function driveAllStates(page: Page, theme: string): Promise<void> {
   await expect(page.locator('.sector-tile .tile-state.s-alarm')).toHaveCount(1);
   // The negative-claim fixture: every performed check green, the claim printed
   // inside the state that demonstrates it.
-  await expect(page.locator('#flip-readout [data-check="pass"]')).toHaveCount(2);
+  await expect(page.locator('#flip-readout [data-check="pass"]')).toHaveCount(3);
   await expect(page.locator('[data-check="fail"]')).toHaveCount(0);
   await expect(page.locator('#flip-readout [data-negative-claim="NEG-1"]')).toBeVisible();
   await scanAt('Flip: the NEG-1 fixture — every check green, the claim printed, the data wrong');
