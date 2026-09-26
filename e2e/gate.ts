@@ -318,9 +318,9 @@ export async function boot(page: Page, theme: 'dark' | 'light'): Promise<void> {
   await expect(page.locator('#act-disk .sector-tile[aria-pressed="true"] .tile-id')).toHaveText('SECTOR 09');
   await expect(page.locator('#disk-readout')).toContainText('DECRYPTED — AND INTACT');
   await expect(page.locator('#disk-readout')).toContainText('none — there is none to give');
-  // The four rows of the check inventory: two the construction really performs
-  // and two it does not have, which is the exhibit rather than an omission.
-  await expect(page.locator('#disk-readout [data-check]')).toHaveCount(2);
+  // The five rows of the check inventory: three input checks the construction
+  // performs and two integrity checks it does not have.
+  await expect(page.locator('#disk-readout [data-check]')).toHaveCount(3);
   await expect(page.locator('#disk-readout [data-missing-check]')).toHaveCount(2);
   // The negative claim belongs to the damaged state, not to the arrival state.
   await expect(page.locator('[data-negative-claim]')).toHaveCount(1);
