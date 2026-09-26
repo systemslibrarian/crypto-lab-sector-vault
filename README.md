@@ -35,11 +35,12 @@ primitive: it exposes no raw single-block AES, and the usual workaround (AES-CBC
 under a zero IV over one block) coerces the very operation being taught into
 something unreadable.
 
-**The problem.** A sector is exactly 512 or 4096 bytes on the hardware and has
-to stay exactly that after encryption, so there is nowhere to put a nonce, a
-tag, or a version number. SP 800-38E answers that constraint with a mode that
-expands data by zero bytes — and states plainly that it provides confidentiality
-only, not authentication of the data or its source.
+**The problem.** This lab encrypts a 512-byte sector in place, leaving no space
+inside that sector for a nonce, tag, or version number. XTS expands data by zero
+bytes and provides confidentiality only, not authentication of the data or its
+source. NIST's [September 2026 initial draft of SP 800-38E Rev. 1](https://csrc.nist.gov/pubs/sp/800/38/e/r1/ipd)
+clarifies that fixed-size XTS data units need not coincide exactly with physical
+or logical blocks. The revision is still a draft; 512 bytes is this demo's choice.
 
 **The security model.** The adversary can read and write the stored ciphertext
 and cannot read the keys. That is the model for a stolen laptop, a snapshotted
@@ -184,7 +185,7 @@ nobody pays the cost. `dm-integrity` carries a per-sector tag underneath
 dm-crypt; ZFS and Btrfs checksum at the block level; and T10 Protection
 Information adds eight bytes of metadata per sector on enterprise SAS drives
 precisely so that there is room. Each of those buys the metadata space
-SP 800-38E assumes away.
+that this lab's in-place sector example lacks.
 
 ## How to Run Locally
 

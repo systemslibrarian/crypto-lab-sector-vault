@@ -26,7 +26,7 @@ export function introCard(): HTMLElement {
   return h('section', { class: 'card', id: 'intro', 'aria-labelledby': 'intro-title' }, [
     h('h2', { id: 'intro-title', text: 'What this is, in plain language' }),
     h('p', {
-      text: 'When a laptop encrypts its disk, it cannot afford to store anything extra. A sector is exactly 512 or 4096 bytes on the hardware, and after encryption it has to be exactly 512 or 4096 bytes again — so there is no room for a checksum, a signature, or a "this is version 7" marker. The mode built for that constraint is called XTS, and it is what BitLocker, FileVault, LUKS and most cloud disks use.',
+      text: 'This lab replaces a 512-byte disk sector in place: after encryption, that sector must still be 512 bytes, with no space beside it for a checksum, a tag, or a "this is version 7" marker. XTS encrypts fixed-size storage data units without expanding them; those units need not always equal physical sectors. BitLocker, FileVault, LUKS and many cloud disks use XTS.',
     }),
     h('p', {
       text: 'XTS keeps your data secret. That is all it does. It has no way to tell you that someone changed the encrypted bytes on the disk, because it never stored anything that could disagree with them. Change one bit and the affected chunk comes back as sixteen bytes of noise — and the disk reports a perfectly successful read.',

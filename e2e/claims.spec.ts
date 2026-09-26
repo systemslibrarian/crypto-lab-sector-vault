@@ -490,6 +490,9 @@ test.describe('the three-stage comparison', () => {
     expect(notes).toContain('moved the rollback target');
     const scope = (await page.locator('#act-compare').innerText()).replace(/\s+/g, ' ');
     expect(scope).toContain('SP 800-38E');
+    expect(scope).toContain('This lab chooses a 512-byte sector as its data unit');
+    expect(scope).toContain('need not coincide exactly with physical or logical blocks');
+    expect(scope).toContain('initial draft');
     expect(scope).toContain('dm-integrity');
     expect(scope).toContain('T10 Protection Information');
     // The cross-link to the sibling lab lives behind a disclosure, so open it

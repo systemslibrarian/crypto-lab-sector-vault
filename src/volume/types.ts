@@ -1,10 +1,11 @@
 /** Geometry and vocabulary shared by the volume, the attacks and the panels. */
 
 /**
- * 512 bytes, because that is the scope SP 800-38E was written for: storage
- * devices whose data unit is exactly the sector, with no room beside it for a
- * nonce or a tag. Changing this number to something convenient would quietly
- * change the argument the lab is making.
+ * This lab chooses a 512-byte sector as its fixed-size XTS data unit. A
+ * replacement sector cannot grow to carry a nonce or tag, which is the
+ * constraint the comparison panel demonstrates. NIST SP 800-38E Rev. 1's
+ * initial draft clarifies that other fixed-size data units need not coincide
+ * with physical or logical device blocks.
  */
 export const SECTOR_BYTES = 512;
 export const SECTOR_COUNT = 16;

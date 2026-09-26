@@ -66,12 +66,12 @@ export function mountComparisonPanel(): { root: HTMLElement; refresh: () => void
   root.append(
     h('h3', { text: 'Why XTS omits all of it' }),
     h('p', { class: 'lede' }, [
-      'NIST SP 800-38E scopes XTS-AES to storage devices where the data unit is the sector — exactly 512 or 4096 bytes, with nowhere to put a nonce or a tag — and states plainly that the mode provides confidentiality only, not authentication of the data or its source. ',
+      'NIST SP 800-38E scopes XTS-AES to storage confidentiality without data expansion; it does not authenticate data or its source. This lab chooses a 512-byte sector as its data unit, with no spare bytes in that sector for a nonce or tag. The September 2026 initial draft of Rev. 1 clarifies that XTS data units need not coincide exactly with physical or logical blocks. ',
       'The mode was written to expand data by zero bytes, and everything in the table above costs bytes.',
     ]),
     h('p', { class: 'lede' }, [
       'That is a design choice with a cost, not an oversight, and it is not true that nobody does the other thing. ',
-      'dm-integrity carries a per-sector tag underneath dm-crypt; filesystem-level checksumming (ZFS, Btrfs) detects modification at the block level; and T10 Protection Information adds eight bytes of metadata per sector on enterprise SAS drives precisely so there is room. Those designs all buy the metadata space that SP 800-38E assumes away.',
+      'dm-integrity carries a per-sector tag underneath dm-crypt; filesystem-level checksumming (ZFS, Btrfs) detects modification at the block level; and T10 Protection Information adds eight bytes of metadata per sector on enterprise SAS drives precisely so there is room. Those designs provide metadata space that this in-place sector example lacks.',
     ]),
   );
 
@@ -232,7 +232,7 @@ export function mountComparisonPanel(): { root: HTMLElement; refresh: () => void
       ),
       h('p', {
         class: 'readout-note',
-        text: `On a device whose sector is exactly ${SECTOR_BYTES} bytes, those extra bytes have nowhere to go. That is the constraint SP 800-38E was written under, and it is why the answer was a mode with no integrity rather than a mode with weak integrity.`,
+        text: `This lab replaces each ${SECTOR_BYTES}-byte sector in place, so the extra bytes need storage elsewhere. XTS was designed for storage confidentiality without data expansion; integrity and freshness need additional mechanisms.`,
       }),
     ]);
   }
