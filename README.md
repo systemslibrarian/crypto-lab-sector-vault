@@ -220,12 +220,12 @@ The a11y and claims suites need a browser once:
 
 ## Build & Verify
 
-`npm test` runs **119 unit tests** across 12 files. **26 of them are
+`npm test` runs **120 unit tests** across 12 files. **24 of them are
 known-answer tests against published vectors**, covering 16 vectors in total:
 
 | Source | File | What is pinned |
 |---|---|---|
-| IEEE Std 1619-2007 Annex B / NIST SP 800-38E | `src/crypto/xts.test.ts` | Vectors 1, 2, 3 and 15–18 in full — including all four ciphertext-stealing lengths — plus vectors 4 (XTS-AES-128, 512 bytes) and 10 (XTS-AES-256, 512 bytes) by their published 32-byte prefix |
+| IEEE Std 1619-2007 Annex B / NIST SP 800-38E | `src/crypto/xts.test.ts` | Vectors 2, 3 and 15–18 in full — including all four ciphertext-stealing lengths — plus vectors 4 (XTS-AES-128, 512 bytes) and 10 (XTS-AES-256, 512 bytes) by their published 32-byte prefix. Legacy vector 1 has identical zero-key halves and is now a rejection test for the public constructor. |
 | FIPS-197 Appendix C | `src/crypto/aes-block.test.ts` | AES-128, AES-192 and AES-256 single-block encryption and decryption, so the borrowed primitive is checked before any mode vector is trusted |
 | NIST SP 800-38D | `src/crypto/gcm.test.ts` | GCM test cases 2, 3, 4 and 14, so act 5's BAD_TAG results come from something demonstrably AES-GCM |
 

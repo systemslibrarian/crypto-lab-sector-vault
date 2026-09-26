@@ -7,10 +7,11 @@ const goodKey = { k1: new Uint8Array(16).fill(1), k2: new Uint8Array(16).fill(2)
 const sector = new Uint8Array(SECTOR_BYTES).fill(0x41);
 
 describe('the checks XTS actually performs', () => {
-  it('reports two real checks and two that do not exist', () => {
+  it('reports three real input checks and two that do not exist', () => {
     const checks = runXtsChecks(goodKey, 3n, sector);
     expect(checks.map((c) => c.name)).toEqual([
       'Key length',
+      'Distinct key halves',
       'Data unit length',
       'Data authenticity',
       'Freshness',
@@ -39,6 +40,16 @@ describe('the checks XTS actually performs', () => {
     expect(keyCheck?.detail).toContain('KEY_LENGTH_INVALID');
     // With no cipher there is nothing to run the data unit through, and the
     // page must not report that as a pass.
+    expect(checks.find((c) => c.code === 'MALFORMED_SECTOR')?.outcome).toBe('fail');
+  });
+
+  it('reports equal key halves as a separate validation failure', () => {
+    const halves = new Uint8Array(16).fill(1);
+    const checks = runXtsChecks({ k1: halves, k2: Uint8Array.from(halves) }, 0n, sector);
+    expect(checks.find((c) => c.code === 'KEY_LENGTH_INVALID')?.outcome).toBe('pass');
+    const distinct = checks.find((c) => c.code === 'KEY_COMPONENTS_EQUAL');
+    expect(distinct?.outcome).toBe('fail');
+    expect(distinct?.detail).toContain('KEY_COMPONENTS_EQUAL');
     expect(checks.find((c) => c.code === 'MALFORMED_SECTOR')?.outcome).toBe('fail');
   });
 

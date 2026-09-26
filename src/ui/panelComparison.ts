@@ -166,7 +166,7 @@ export function mountComparisonPanel(): { root: HTMLElement; refresh: () => void
         h('table', { class: 'matrix' }, [
           h('caption', {
             class: 'readout-note',
-            text: 'The first two are input validation — a data unit under 16 bytes, a key of the wrong length — and belong to every construction here, because all three refuse malformed input. The last two are the only codes that can ever fire because of something an adversary did.',
+            text: 'The first three are input validation: a data unit under 16 bytes, a key of the wrong length, or identical XTS key halves. Only XTS takes two key halves. BAD_TAG and STALE_VERSION are the checks for an adversary’s edited or replayed data that bare XTS lacks.',
           }),
           h('thead', {}, [
             h('tr', {}, [
@@ -181,8 +181,8 @@ export function mountComparisonPanel(): { root: HTMLElement; refresh: () => void
               h('tr', {}, [
                 h('th', { scope: 'row', text: code }),
                 ...CONSTRUCTIONS.map((construction) => {
-                  const isInputCode = (XTS_FAILURE_CODES as readonly string[]).includes(code);
-                  const has = isInputCode || observed.get(construction)?.has(code) === true;
+                  const isSharedInputCode = code === 'MALFORMED_SECTOR' || code === 'KEY_LENGTH_INVALID';
+                  const has = isSharedInputCode || (code === 'KEY_COMPONENTS_EQUAL' && construction === 'xts') || observed.get(construction)?.has(code) === true;
                   return h('td', {}, [
                     verdictPill(has ? TONE_OK : TONE_ALARM, has ? 'available' : 'no such code'),
                   ]);

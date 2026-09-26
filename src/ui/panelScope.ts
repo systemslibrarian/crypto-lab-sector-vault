@@ -92,7 +92,7 @@ export function scopeCard(): HTMLElement {
 
     h('h3', { text: 'Not production cryptography' }),
     h('p', {
-      text: `This is a teaching demo. It runs entirely in your browser with no backend, its keys live for as long as the tab does, and it exists to be broken. Do not use it to protect anything. The failure codes XTS itself can raise are ${XTS_FAILURE_CODES.join(' and ')}, and both are about malformed input.`,
+      text: `This is a teaching demo. It runs entirely in your browser with no backend, its keys live for as long as the tab does, and it exists to be broken. Do not use it to protect anything. The failure codes XTS itself can raise are ${XTS_FAILURE_CODES.join(', ')}, and all three are about invalid input, not tampering with stored ciphertext.`,
     }),
 
     h('details', { class: 'more' }, [

@@ -13,9 +13,9 @@
  * discarding the padding block) is a coercion that hides the very operation
  * being taught.
  *
- * Failure codes are deliberately almost empty. XTS has exactly two things it
- * can refuse — a data unit too short to encrypt, and a key of the wrong length
- * — and NOTHING it can say about a ciphertext an adversary has edited. There is
+ * Failure codes are deliberately almost empty. Input validation rejects a data
+ * unit too short to encrypt, a key of the wrong length, or identical key halves.
+ * XTS still has NOTHING it can say about a ciphertext an adversary has edited. There is
  * no MAC, no tag, no redundancy: SP 800-38E section 4 states the mode provides
  * confidentiality only and "does not provide authentication of the data or its
  * source". The absence in this enum is the exhibit.
@@ -26,8 +26,8 @@ import { sequenceNumberToBlock, xorBytes } from './bytes.js';
 
 export const XTS_BLOCK_BYTES = 16;
 
-/** Every failure XTS itself is capable of reporting. There are two. */
-export const XTS_FAILURE_CODES = ['MALFORMED_SECTOR', 'KEY_LENGTH_INVALID'] as const;
+/** Input-validation failures; none authenticates a stored ciphertext. */
+export const XTS_FAILURE_CODES = ['MALFORMED_SECTOR', 'KEY_LENGTH_INVALID', 'KEY_COMPONENTS_EQUAL'] as const;
 export type XtsFailureCode = (typeof XTS_FAILURE_CODES)[number];
 
 export class XtsError extends Error {
@@ -88,6 +88,13 @@ function assertKeyPair(key: XtsKeyPair): 128 | 256 {
       'KEY_LENGTH_INVALID',
       `XTS-AES takes two 16-byte keys (XTS-AES-128) or two 32-byte keys (XTS-AES-256); got ${k1.length}`,
     );
+  }
+  // SP 800-38E Rev. 1 initial draft §4 explicitly requires distinct halves:
+  // equal halves expose the single-key XEX construction to a chosen-ciphertext attack.
+  let difference = 0;
+  for (let i = 0; i < k1.length; i++) difference |= k1[i] ^ k2[i];
+  if (difference === 0) {
+    throw new XtsError('KEY_COMPONENTS_EQUAL', 'XTS requires distinct data and tweak keys (K1 must differ from K2)');
   }
   return k1.length === 16 ? 128 : 256;
 }

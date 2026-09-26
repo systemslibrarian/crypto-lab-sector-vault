@@ -200,11 +200,11 @@ test.describe('NEG-1: XTS reports nothing about an edited ciphertext', () => {
     expect(alarmTiles).toBe(1);
   });
 
-  test('the read-out and the failure-code table name the same two XTS codes', async ({ page }) => {
+  test('the read-out and the failure-code table name the same three XTS codes', async ({ page }) => {
     await boot(page);
     const fromReadout = (await page.locator('#disk-readout').innerText())
       .replace(/\s+/g, ' ')
-      .match(/codes this mode has ([A-Z_ ·]+?) Both/)?.[1]
+      .match(/codes this mode has ([A-Z_ ·]+?) All three/)?.[1]
       .trim()
       .split(' · ');
     expect(fromReadout).toBeTruthy();
@@ -217,7 +217,7 @@ test.describe('NEG-1: XTS reports nothing about an edited ciphertext', () => {
       if (cell.includes('available')) availableForXts.push(code);
     }
     expect(availableForXts, 'two surfaces, printed by different code, must name the same codes').toEqual(fromReadout);
-    expect(availableForXts).toEqual(['MALFORMED_SECTOR', 'KEY_LENGTH_INVALID']);
+    expect(availableForXts).toEqual(['MALFORMED_SECTOR', 'KEY_LENGTH_INVALID', 'KEY_COMPONENTS_EQUAL']);
   });
 });
 

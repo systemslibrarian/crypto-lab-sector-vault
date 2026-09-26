@@ -13,15 +13,6 @@ import { mulAlphaPow } from './gf128.js';
  */
 const IEEE_1619_FULL = [
   {
-    id: 1,
-    note: 'zero keys, zero data unit, 32 bytes',
-    k1: '00000000000000000000000000000000',
-    k2: '00000000000000000000000000000000',
-    seq: 0n,
-    pt: '00'.repeat(32),
-    ct: '917cf69ebd68b2ec9b9fe9a3eadda692cd43d2f59598ed858c02c2652fbf922e',
-  },
-  {
     id: 2,
     note: 'repeating keys, 32 bytes',
     k1: '11111111111111111111111111111111',
@@ -110,6 +101,10 @@ function counterPlaintext(length: number): Uint8Array {
 }
 
 describe('XTS-AES known-answer tests (IEEE 1619-2007 / NIST SP 800-38E)', () => {
+  it('rejects legacy vector 1: its equal zero-key halves are not a valid XTS key pair', () => {
+    expect(() => createXtsCipher({ k1: new Uint8Array(16), k2: new Uint8Array(16) }))
+      .toThrowError(new XtsError('KEY_COMPONENTS_EQUAL', 'XTS requires distinct data and tweak keys (K1 must differ from K2)'));
+  });
   for (const v of IEEE_1619_FULL) {
     it(`vector ${v.id} — ${v.note} — encrypts to the published ciphertext`, () => {
       const cipher = createXtsCipher({ k1: fromHex(v.k1), k2: fromHex(v.k2) });
@@ -196,8 +191,23 @@ describe('XTS structure', () => {
 describe('what XTS can and cannot refuse', () => {
   const key = { k1: fromHex('fffefdfcfbfaf9f8f7f6f5f4f3f2f1f0'), k2: fromHex('bfbebdbcbbbab9b8b7b6b5b4b3b2b1b0') };
 
-  it('has exactly two failure codes', () => {
-    expect([...XTS_FAILURE_CODES]).toEqual(['MALFORMED_SECTOR', 'KEY_LENGTH_INVALID']);
+  it('has three input-validation codes and no ciphertext-authentication code', () => {
+    expect([...XTS_FAILURE_CODES]).toEqual(['MALFORMED_SECTOR', 'KEY_LENGTH_INVALID', 'KEY_COMPONENTS_EQUAL']);
+  });
+
+  it('rejects equal key halves at both supported sizes and accepts distinct halves', () => {
+    for (const size of [16, 32]) {
+      const same = new Uint8Array(size).fill(7);
+      try {
+        createXtsCipher({ k1: same, k2: Uint8Array.from(same) });
+        expect.unreachable('equal key halves must be refused');
+      } catch (error) {
+        expect((error as XtsError).code).toBe('KEY_COMPONENTS_EQUAL');
+      }
+      const distinct = Uint8Array.from(same);
+      distinct[size - 1] ^= 1;
+      expect(createXtsCipher({ k1: same, k2: distinct }).aesBits).toBe(size * 8);
+    }
   });
 
   it('raises MALFORMED_SECTOR below one block, in both directions', () => {

@@ -73,7 +73,7 @@ export function readout(volume: SectorVolume, read: SectorRead): HTMLElement {
     ]),
     h('p', {
       class: 'readout-note',
-      text: 'Both of those codes are about malformed input — a data unit under 16 bytes, or a key of the wrong length. Neither one can fire on a ciphertext an adversary edited, because XTS carries no tag, no checksum and no redundancy to test.',
+      text: 'All three codes are input validation — a data unit under 16 bytes, a key of the wrong length, or identical XTS key halves. None can fire on a ciphertext an adversary edited, because XTS carries no tag, no checksum and no redundancy to test.',
     }),
   ]);
 

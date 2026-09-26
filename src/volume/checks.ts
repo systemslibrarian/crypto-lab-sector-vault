@@ -3,8 +3,8 @@
  *
  * This is the evidence half of the negative claim. The page cannot simply
  * assert that nothing was detected — it has to reach the state, run the checks
- * the construction genuinely has, and print their outcomes. Two of them exist
- * and both pass; the other two rows are the exhibit, because they name checks
+ * the construction genuinely has, and print their outcomes. Three input checks
+ * pass; the other two rows are the exhibit, because they name checks
  * the mode does not have at all. The absence of a failure code is the finding,
  * and inventing one to look thorough would teach the opposite of the lesson.
  */
@@ -25,26 +25,37 @@ export function runXtsChecks(
 ): ConstructionCheck[] {
   const checks: ConstructionCheck[] = [];
 
-  // 1. KEY_LENGTH_INVALID — really attempted, not assumed.
+  // 1 and 2. Validate both halves before decrypting; these are input checks,
+  // not checks of the stored ciphertext.
   let cipher: ReturnType<typeof createXtsCipher> | null = null;
+  let keyError: XtsError | null = null;
   try {
     cipher = createXtsCipher(key);
-    checks.push({
-      name: 'Key length',
-      code: 'KEY_LENGTH_INVALID',
-      outcome: 'pass',
-      detail: `K1 and K2 are both ${key.k1.length} bytes, so XTS-AES-${key.k1.length * 8} is well formed`,
-    });
   } catch (error) {
-    checks.push({
-      name: 'Key length',
-      code: 'KEY_LENGTH_INVALID',
-      outcome: 'fail',
-      detail: error instanceof XtsError ? `${error.code}: ${error.message}` : String(error),
-    });
+    if (!(error instanceof XtsError)) throw error;
+    keyError = error;
   }
+  const lengthValid = cipher !== null || keyError?.code === 'KEY_COMPONENTS_EQUAL';
+  checks.push({
+    name: 'Key length',
+    code: 'KEY_LENGTH_INVALID',
+    outcome: lengthValid ? 'pass' : 'fail',
+    detail: lengthValid
+      ? `K1 and K2 are both ${key.k1.length} bytes, so XTS-AES-${key.k1.length * 8} is well formed`
+      : `${keyError?.code}: ${keyError?.message}`,
+  });
+  checks.push({
+    name: 'Distinct key halves',
+    code: 'KEY_COMPONENTS_EQUAL',
+    outcome: cipher === null ? 'fail' : 'pass',
+    detail: cipher !== null
+      ? 'K1 and K2 differ, as required for XTS'
+      : keyError?.code === 'KEY_COMPONENTS_EQUAL'
+        ? `${keyError.code}: ${keyError.message}`
+        : 'not reached: the key length was rejected first',
+  });
 
-  // 2. MALFORMED_SECTOR — the decrypt is really run and its outcome reported.
+  // 3. MALFORMED_SECTOR — the decrypt is really run and its outcome reported.
   if (cipher === null) {
     checks.push({
       name: 'Data unit length',
@@ -71,7 +82,7 @@ export function runXtsChecks(
     }
   }
 
-  // 3 and 4. The rows that do not exist. XTS stores no tag, no checksum and no
+  // 4 and 5. The rows that do not exist. XTS stores no tag, no checksum and no
   // counter, so there is nothing for a check to compare against.
   checks.push({
     name: 'Data authenticity',
