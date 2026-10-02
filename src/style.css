@@ -249,6 +249,25 @@ h4 {
   gap: 0.25rem;
   min-width: 0;
   max-width: 100%;
+  /* WebKit sizes a <select>'s intrinsic width from its WIDEST OPTION, and that
+     contribution reaches the document even when the control's own box fits and
+     `min-width: 0` is already set here. At 390px this page scrolled sideways by
+     51px in WebKit and 0 in Chromium, with no element anywhere having a right
+     edge past the viewport. Proven by setting every option's text to "x" in the
+     live page: document scrollWidth 441 became 390, and hiding the select alone
+     did the same.
+
+     `clip` rather than `hidden`, so this never becomes a scroll container. The
+     clip margin keeps the focus ring in engines that support it; WebKit does not,
+     and WebKit is the engine that needs the clip, so the ring is also pulled
+     inside the control's own box below. */
+  overflow-x: clip;
+  overflow-clip-margin: 4px;
+}
+.field select:focus-visible {
+  /* Drawn just inside the border box, so no clip can reach it. The global
+     :focus-visible rule is 2px at offset 2px. */
+  outline-offset: -2px;
 }
 /* The write box is the one field that wants room. Giving it a whole flex row
    keeps it from forcing the document sideways at 380px (WCAG 1.4.10) while
