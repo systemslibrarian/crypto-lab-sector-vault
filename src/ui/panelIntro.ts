@@ -38,5 +38,9 @@ export function introCard(): HTMLElement {
       class: 'readout-note',
       text: 'Every operation on this page is real cryptography running in your browser. Nothing is mocked, and nothing is precomputed.',
     }),
+    h('p', {}, [
+      h('a', { href: '#wideblock-research' }, ['Try the EME2 wide-block comparison']),
+      ' to see how a ciphertext edit spreads across a whole data unit without detecting the attacker.',
+    ]),
   ]);
 }

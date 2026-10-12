@@ -50,9 +50,9 @@ const main = h('main', {}, [
   relocate.root,
   watermark.root,
   comparison.root,
+  buildWideblockResearch(),
   log.root,
   scopeCard(),
-  buildWideblockResearch(),
 ]);
 
 app.append(

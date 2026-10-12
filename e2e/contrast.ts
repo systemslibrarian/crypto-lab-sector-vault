@@ -532,7 +532,7 @@ export async function auditContrast(
       // A closed <details> hides its body with `content-visibility: hidden`,
       // not `display: none`, and Chromium keeps the last laid-out geometry for
       // that subtree — so the `display`/rect tests above all pass for text
-      // that paints nothing. `checkVisibility()` catches it. This page has four
+      // that paints nothing. `checkVisibility()` catches it. This page has six
       // of the shape, all shipping shut: the block-independence note in act 2,
       // the design-consequence note in act 4, the Stream Ward cross-link in
       // act 5, and the standards list in the scope card. The gate opens each of

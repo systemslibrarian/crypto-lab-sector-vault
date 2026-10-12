@@ -41,7 +41,7 @@ export const REFLOW = { width: 280, height: 800 };
  *     every `[hidden]` attribute and set every `<details>.open` by JS before
  *     its only scan. That scans a state the page never renders, and destroys
  *     the ability to catch the `[hidden]` cascade trap. This lab has no
- *     `[hidden]` content at all — everything is on one page — and its four
+ *     `[hidden]` content at all — everything is on one page — and its six
  *     disclosures are opened here through their `<summary>`, which is the route
  *     a reader has, with both the shut and the open state scanned.
  *
@@ -355,7 +355,7 @@ export async function boot(page: Page, theme: 'dark' | 'light'): Promise<void> {
 
   // ── The session log is empty, and every disclosure ships shut ──────────
   await expect(page.locator('#log-host')).toContainText('Nothing yet');
-  await expect(page.locator('details.more')).toHaveCount(4);
+  await expect(page.locator('details.more')).toHaveCount(6);
   await expect(page.locator('details.more[open]')).toHaveCount(0);
 
   await settle(page);
@@ -893,12 +893,24 @@ export async function driveAllStates(page: Page, theme: string): Promise<void> {
   await expect(page.locator('#comparison table.matrix tbody tr').nth(2)).toContainText('STALE_VERSION');
 
   // ── Every disclosure, opened the way a reader opens it ──────────────────
+  for (const action of ['clean', 'plaintext-bit', 'ciphertext-bit', 'splice', 'wrong-ad', 'replay']) {
+    await page.selectOption('#eme2-experiment', action);
+    await scanAt(`EME2 research exhibit: ${action}`);
+  }
+  await page.selectOption('#eme2-experiment', 'ciphertext-bit');
+  for (const size of ['513', '2064']) {
+    await page.selectOption('#eme2-size', size);
+    await scanAt(`EME2 research exhibit: ${size}-byte data unit`);
+  }
+  await page.selectOption('#eme2-size', '512');
+  await page.locator('#eme2-rekey').click();
+  await scanAt('EME2 research exhibit: fresh keys');
   const disclosures = page.locator('details.more');
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < await disclosures.count(); i++) {
     await disclosures.nth(i).locator('summary').click();
     await expect(disclosures.nth(i)).toHaveAttribute('open', '');
   }
-  await expect(page.locator('details.more[open]')).toHaveCount(4);
+  await expect(page.locator('details.more[open]')).toHaveCount(6);
   await scanAt('every disclosure open — the depth panels a reader has to ask for');
 
   // ── Hover, which persists after a click ─────────────────────────────────

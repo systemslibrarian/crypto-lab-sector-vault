@@ -14,7 +14,7 @@ import {
  *
  * The lab is driven along everything it teaches: the arrival state, exactly as
  * a reader gets it — sector 9 selected, the tweak ladder at j = 0, one disk
- * image held, nothing damaged, all four disclosures shut and act 5's nine
+ * image held, nothing damaged, all six disclosures shut and act 5's nine
  * experiments already resolved; the shared skip link focused; another sector
  * and another block selected; the tweak ladder stepped through both branches of
  * the GF(2^128) reduction, found rather than assumed; a sector rewritten, which
@@ -25,7 +25,8 @@ import {
  * back, which is the one read that succeeds cleanly and is still wrong; act 4's
  * 512-cell watermark grid with changed blocks and then with a reverted one, and
  * then discarded again; act 5 with the attacker owning the version store and
- * without; all four disclosures open; four hover states; three focus rings; and
+ * without; every EME2 experiment, partial blocks, mask renewal and fresh keys;
+ * all six disclosures open; four hover states; three focus rings; and
  * the volume reformatted. Every one of those states is scanned, at desktop and
  * phone width.
  *

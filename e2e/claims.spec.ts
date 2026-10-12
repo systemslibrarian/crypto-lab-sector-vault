@@ -1,5 +1,49 @@
 import { expect, test, type Page } from '@playwright/test';
 
+test('the runnable EME2 comparison measures diffusion and keeps rollback distinct', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('./#wideblock-research');
+  const exhibit = page.locator('#wideblock-research');
+  await expect(exhibit).toBeVisible();
+  const heading = await exhibit.locator('h2').boundingBox();
+  const topbar = await page.locator('.cl-topbar').boundingBox();
+  expect(heading!.y).toBeGreaterThanOrEqual(topbar!.y + topbar!.height);
+  await expect(exhibit.getByRole('link', { name: /Halevi/ })).toHaveAttribute('href', 'https://eprint.iacr.org/2004/125');
+  await expect(exhibit).toContainText('not a claim of IEEE 1619.2-2025 conformance');
+  await expect(exhibit).toContainText('not official IEEE vectors');
+  for (const size of [512, 513, 2064]) {
+    await page.selectOption('#eme2-size', String(size));
+    const total = Math.ceil(size / 16);
+    for (const action of ['ciphertext-bit', 'plaintext-bit', 'splice', 'wrong-ad', 'replay', 'clean']) {
+      await page.selectOption('#eme2-experiment', action);
+      const xts = exhibit.locator('.eme2-result').nth(0), eme = exhibit.locator('.eme2-result').nth(1);
+      await expect(eme.locator('.eme2-map li')).toHaveCount(total);
+      const changed = await eme.locator('.eme2-map li.changed').count();
+      await expect(eme.locator('[data-eme2-count]')).toContainText(`${changed} of ${total} blocks changed`);
+      if (['ciphertext-bit', 'plaintext-bit', 'splice'].includes(action)) {
+        await expect(xts.locator('.eme2-map li.changed')).toHaveCount(1);
+        // Wider measured damage, not a probabilistic claim of universal total diffusion.
+        expect(changed).toBeGreaterThan(1);
+      } else if (action === 'clean') {
+        expect(changed).toBe(0);
+        await expect(page.locator('#eme2-status')).toContainText('Original bytes returned');
+      } else if (action === 'replay') {
+        await expect(page.locator('#eme2-status')).toContainText('Old version returned intact — rollback accepted');
+        await expect(eme.locator('[data-eme2-count]')).toContainText('1 bit differs');
+        await expect(xts.locator('[data-eme2-count]')).toContainText('1 bit differs');
+      } else await expect(page.locator('#eme2-status')).toContainText('no authentication error');
+    }
+  }
+  await page.selectOption('#eme2-size', '512');
+  await page.selectOption('#eme2-experiment', 'plaintext-bit');
+  const before = await exhibit.locator('.eme2-hex').nth(1).textContent();
+  await page.locator('#eme2-rekey').click();
+  expect(await exhibit.locator('.eme2-hex').nth(1).textContent()).not.toBe(before);
+  await expect(page.locator('#log-host')).toContainText('Nothing yet');
+  expect(errors).toEqual([]);
+});
+
 /**
  * The claims suite: does the page tell the truth?
  *

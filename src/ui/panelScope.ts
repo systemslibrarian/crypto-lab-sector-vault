@@ -56,6 +56,9 @@ export function scopeCard(): HTMLElement {
     h('h3', { text: 'What is real' }),
     h('ul', { class: 'scope-list' }, [
       h('li', {
+        text: 'The separate EME2 exhibit runs real historical EME* / EME2 encryption and decryption, including AD hashing, partial blocks and mask renewal. Independent OpenSSL/BigInt checks and published third-party regression vectors validate this research construction; they are not official IEEE 1619.2-2025 conformance tests. Its source links and limits are visible in the exhibit.',
+      }),
+      h('li', {
         text: 'XTS-AES-128 per NIST SP 800-38E and IEEE Std 1619-2007: XEX tweaking, the GF(2^128) alpha ladder and ciphertext stealing, all written out in this repository and verified against the standard’s own published vectors.',
       }),
       h('li', {

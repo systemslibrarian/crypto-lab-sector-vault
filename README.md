@@ -10,6 +10,11 @@ actually stops.
 
 **Live demo:** https://systemslibrarian.github.io/crypto-lab-sector-vault/
 
+**New exhibit:** [EME2 wide-block comparison](https://systemslibrarian.github.io/crypto-lab-sector-vault/#wideblock-research).
+Run real historical EME2 encryption/decryption beside XTS, including partial
+blocks, ciphertext edits, associated-data changes and rollback. The exhibit
+links its primary sources and explains its validation limits in the page.
+
 ---
 
 ## What It Is
@@ -221,7 +226,7 @@ The a11y and claims suites need a browser once:
 
 ## Build & Verify
 
-`npm test` runs **120 unit tests** across 12 files. **24 of them are
+`npm test` runs **159 unit tests** across 14 files. **24 original tests are
 known-answer tests against published vectors**, covering 16 vectors in total:
 
 | Source | File | What is pinned |
@@ -229,6 +234,12 @@ known-answer tests against published vectors**, covering 16 vectors in total:
 | IEEE Std 1619-2007 Annex B / NIST SP 800-38E | `src/crypto/xts.test.ts` | Vectors 2, 3 and 15–18 in full — including all four ciphertext-stealing lengths — plus vectors 4 (XTS-AES-128, 512 bytes) and 10 (XTS-AES-256, 512 bytes) by their published 32-byte prefix. Legacy vector 1 has identical zero-key halves and is now a rejection test for the public constructor. |
 | FIPS-197 Appendix C | `src/crypto/aes-block.test.ts` | AES-128, AES-192 and AES-256 single-block encryption and decryption, so the borrowed primitive is checked before any mode vector is trusted |
 | NIST SP 800-38D | `src/crypto/gcm.test.ts` | GCM test cases 2, 3, 4 and 14, so act 5's BAD_TAG results come from something demonstrably AES-GCM |
+
+The EME2 additions use separate evidence: six third-party self-generated
+regression vectors and an independent OpenSSL/BigInt transcription, across
+both AES key sizes and message/AD boundaries. They are **not official IEEE
+vectors**. The 39 new tests also check diffusion measurements, replay,
+input isolation and the exhibit's resource limits.
 
 Beyond the stored vectors, `src/crypto/xts.cross.test.ts` runs an **independent
 cross-implementation oracle**: OpenSSL's own `aes-128-xts` and `aes-256-xts`
@@ -242,14 +253,14 @@ the *production build*, driven through every state the lab paints — the arriva
 state, the tweak ladder in both branches of the GF(2¹²⁸) reduction, a damaged
 block cell, a corrupted sector tile, an `aria-invalid` refusal, a relocated
 block, a stale read, the 512-cell watermark grid, act 5 with and without a
-protected version store, all four disclosures open, four hover states and three
-focus rings — at 1280px and 380px. It asserts axe's `incomplete` bucket as well
+protected version store, all EME2 controls, all six disclosures open, four hover
+states and three focus rings — at 1280px, 380px and 280px. It asserts axe's `incomplete` bucket as well
 as `violations`, computes contrast arithmetically over composited backdrops,
 measures non-text contrast per border side, and checks reflow, which axe has no
 rule for. `e2e/nontext-baseline.ts` is **empty**, and that is the terminal state
 of its ratchet rather than an unrun check.
 
-`npm run test:claims` runs **22 tests that check the page tells the truth**,
+`npm run test:claims` runs **23 tests that check the page tells the truth**,
 built on independent re-derivation rather than internal agreement: the tweak
 ladder is re-checked with BigInt shifts instead of the source's byte-at-a-time
 carry chain, the damaged-block counter against an independent count of the cells
@@ -269,7 +280,7 @@ state: visible, inside the panel that demonstrates it, not behind a disclosure
 and not only in this README. It retires with its fixture — repair the sector and
 the claim is gone.
 
-Every one of those suites was **mutation-tested**: seven separate inversions in
+The original XTS/GCM suites were **mutation-tested**: seven separate inversions in
 the source — the reduction condition, the α ladder, the rollback classification,
 the stage-two rollback outcome, the block-cell fill rule, the negative claim's
 own rendering, and a check inside its fixture — each with the build succeeding
@@ -298,4 +309,24 @@ table rather than on a timer.
 
 ## Wide-block comparison
 
-The live demo references [IEEE 1619.2-2025](https://standards.ieee.org/ieee/1619.2/11949/) and separates EME2-AES diffusion from authentication and rollback protection. EME2 is reading/comparison material only; no unverified implementation or test vector is claimed.
+The separate [runnable EME2 exhibit](https://systemslibrarian.github.io/crypto-lab-sector-vault/#wideblock-research)
+compares actual XTS and EME2 outputs for 512-, 513- and 2064-byte data units.
+Change one plaintext bit, flip a ciphertext bit, splice a block, change the
+address/AD or restore an old version. Each map counts changed blocks and bits
+from the computed bytes. Diffusion does not authenticate ciphertext or prevent
+rollback. XTS, AES-GCM and trusted-version lessons remain available above.
+
+`src/crypto/eme2.ts` implements Halevi's [EME* construction](https://eprint.iacr.org/2004/125)
+(27 May 2004) with byte encoding from the archived IEEE P1619.2/D9 draft
+(December 2008). It supports AES-128/256, independent masks, AD hashing,
+partial blocks and mask renewal. Bounds of 16–8192 data bytes and 0–4096 AD
+bytes are this exhibit's limits, not IEEE limits. The UI uses AES-128 with
+fresh in-memory keys; it is a separate synthetic data unit, not a disk mode
+selector or a replacement for the main volume.
+
+The public [IEEE 1619.2-2025 record](https://standards.ieee.org/ieee/1619.2/11949/)
+(published 20 November 2025; active) establishes current status and EAD scope.
+**This research implementation does not claim conformance to that edition.**
+Validation uses an independent OpenSSL/BigInt transcription and six published
+third-party self-generated regression vectors, not official IEEE vectors.
+See [construction, source fingerprints, key ordering and test evidence](docs/eme2-validation.md).
