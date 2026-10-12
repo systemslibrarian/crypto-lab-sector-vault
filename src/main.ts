@@ -1,4 +1,5 @@
 import './style.css';
+import { buildWideblockResearch } from './ui/wideblock-research.js';
 import { h } from './ui/dom.js';
 import { createState, type AppState, type LabContext } from './ui/state.js';
 import { heroBlock, introCard } from './ui/panelIntro.js';
@@ -51,6 +52,7 @@ const main = h('main', {}, [
   comparison.root,
   log.root,
   scopeCard(),
+  buildWideblockResearch(),
 ]);
 
 app.append(

@@ -295,3 +295,7 @@ table rather than on a timer.
 *One of the browser demos in the [Crypto Lab](https://crypto-lab.systemslibrarian.dev/) suite.*
 
 *"So whether you eat or drink or whatever you do, do it all for the glory of God." — 1 Corinthians 10:31*
+
+## Wide-block comparison
+
+The live demo references [IEEE 1619.2-2025](https://standards.ieee.org/ieee/1619.2/11949/) and separates EME2-AES diffusion from authentication and rollback protection. EME2 is reading/comparison material only; no unverified implementation or test vector is claimed.

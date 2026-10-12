@@ -842,3 +842,7 @@ details.more[open] > summary {
     transition-duration: 0.001ms !important;
   }
 }
+
+#wideblock-research { padding:1.25rem; line-height:1.7; }
+#wideblock-research p, #wideblock-research li { margin-top:.75rem; }
+#wideblock-research ul { padding-left:1.4rem; }
