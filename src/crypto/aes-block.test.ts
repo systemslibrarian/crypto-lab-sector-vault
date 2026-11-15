@@ -3,7 +3,7 @@ import { unsafe } from '@noble/ciphers/aes.js';
 import { fromHex, toHex } from './bytes.js';
 
 /**
- * FIPS-197 Appendix C known-answer tests for the single-block primitive this
+ * FIPS-197 (2001) Appendix C known-answer tests for the single-block primitive this
  * lab builds XTS on top of. The mode is hand-rolled here; the block cipher is
  * not, so this is the check that the borrowed piece is the real AES before any
  * XTS vector is trusted.
@@ -19,7 +19,7 @@ const FIPS_197 = [
 ];
 const FIPS_197_PLAINTEXT = '00112233445566778899aabbccddeeff';
 
-describe('AES block primitive (FIPS-197 Appendix C)', () => {
+describe('AES block primitive (FIPS-197 (2001) Appendix C)', () => {
   for (const vector of FIPS_197) {
     it(`${vector.name} encrypts the appendix C block`, () => {
       const schedule = unsafe.expandKeyLE(fromHex(vector.key));

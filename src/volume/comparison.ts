@@ -9,7 +9,7 @@
  *
  * The three stages exist because the obvious story — "add an AEAD and rollback
  * dies too" — is false. An AEAD authenticates a ciphertext; it does not provide
- * freshness. RFC 5116 section 1.1 says so explicitly: the AEAD interface "does
+ * freshness. RFC 5116 section 1.2 says so explicitly: the AEAD interface "does
  * not address" anti-replay. Stage two proves it: a whole old record replayed at
  * its own sector number authenticates perfectly.
  */
@@ -194,7 +194,7 @@ async function runGcmColumn(
 
   const rollbackDetail = versioned
     ? 'the tag verifies AND the version store was rolled back with it, so nothing is left to notice — the target moved, it did not disappear'
-    : 'the tag verifies: the record is authentic, correctly placed and simply old. An AEAD authenticates a ciphertext; RFC 5116 section 1.1 is explicit that it does not address anti-replay';
+    : 'the tag verifies: the record is authentic, correctly placed and simply old. An AEAD authenticates a ciphertext; RFC 5116 section 1.2 is explicit that it does not address anti-replay';
 
   return [
     await judge(flipped, 'bit-modification', 'the read returned the current version unchanged'),

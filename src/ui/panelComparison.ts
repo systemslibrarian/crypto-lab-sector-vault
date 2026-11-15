@@ -18,7 +18,7 @@ import { percent, TONE_ALARM, TONE_OK, TONE_STALE, verdictPill } from './format.
  *
  * Every cell in this table is produced by running the attack against the real
  * construction when the panel renders. The interesting cell is stage two's
- * rollback: an AEAD authenticates a ciphertext, and RFC 5116 section 1.1 is
+ * rollback: an AEAD authenticates a ciphertext, and RFC 5116 section 1.2 is
  * explicit that the interface does not address anti-replay. A whole old record
  * replayed at its own sector number authenticates perfectly, so "add an AEAD
  * and rollback dies too" is simply false — and the false part is the part worth

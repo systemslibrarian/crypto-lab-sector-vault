@@ -102,7 +102,7 @@ exists to be broken. Do not use it to protect anything.
    | **AES-GCM + protected monotonic version** | BAD_TAG | BAD_TAG | STALE_VERSION |
 
    The interesting cell is the middle row's last one. An AEAD authenticates a
-   ciphertext; it does not provide freshness, and RFC 5116 §1.1 says so in as
+   ciphertext; it does not provide freshness, and RFC 5116 §1.2 says so in as
    many words. A whole old record replayed at its own sector number
    authenticates perfectly. A checkbox on that panel hands the version store to
    the attacker as well, and stage three falls straight back to stage two —
@@ -232,8 +232,16 @@ known-answer tests against published vectors**, covering 16 vectors in total:
 | Source | File | What is pinned |
 |---|---|---|
 | IEEE Std 1619-2007 Annex B / NIST SP 800-38E | `src/crypto/xts.test.ts` | Vectors 2, 3 and 15–18 in full — including all four ciphertext-stealing lengths — plus vectors 4 (XTS-AES-128, 512 bytes) and 10 (XTS-AES-256, 512 bytes) by their published 32-byte prefix. Legacy vector 1 has identical zero-key halves and is now a rejection test for the public constructor. |
-| FIPS-197 Appendix C | `src/crypto/aes-block.test.ts` | AES-128, AES-192 and AES-256 single-block encryption and decryption, so the borrowed primitive is checked before any mode vector is trusted |
+| FIPS-197 (2001) Appendix C | `src/crypto/aes-block.test.ts` | AES-128, AES-192 and AES-256 single-block encryption and decryption, so the borrowed primitive is checked before any mode vector is trusted |
 | NIST SP 800-38D | `src/crypto/gcm.test.ts` | GCM test cases 2, 3, 4 and 14, so act 5's BAD_TAG results come from something demonstrably AES-GCM |
+
+**Standards reviewed 15 November 2026:** the AES block vectors are those of
+[FIPS 197 (2001) Appendix C](https://csrc.nist.gov/pubs/fips/197/final), C.1–C.3;
+the 2023 update's Appendix C prints no vectors and points to NIST's online
+examples instead. The RFC 5116 sentence act 5 relies on — the AEAD interface
+"does not address security protocol issues such as anti-replay services" — is
+in [§1.2 "Scope"](https://www.rfc-editor.org/rfc/rfc5116.html#section-1.2), not
+§1.1 as previously cited.
 
 The EME2 additions use separate evidence: six third-party self-generated
 regression vectors and an independent OpenSSL/BigInt transcription, across
