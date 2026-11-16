@@ -241,7 +241,16 @@ the 2023 update's Appendix C prints no vectors and points to NIST's online
 examples instead. The RFC 5116 sentence act 5 relies on — the AEAD interface
 "does not address security protocol issues such as anti-replay services" — is
 in [§1.2 "Scope"](https://www.rfc-editor.org/rfc/rfc5116.html#section-1.2), not
-§1.1 as previously cited.
+§1.1 as previously cited. Act 2's contrast with CBC said a flipped ciphertext bit
+would "carry the damage forward into every following block"; per
+[SP 800-38A](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)
+Appendix D the bit positions in error reappear in the decryption of the
+*succeeding* block and in no block after that, which is what the panel now says.
+Two SP 800-38E locators in `src/crypto/xts.ts` were also wrong: "does not provide
+authentication of the data or its source" is in the Abstract, restated in §3
+"Introduction" (§4 is "Conformance"), and SP 800-38E has no §5.3.2 — its §5 is the
+ordering convention for the ciphertext-stealing case, while the stealing procedure
+itself is specified in IEEE Std 1619-2007.
 
 The EME2 additions use separate evidence: six third-party self-generated
 regression vectors and an independent OpenSSL/BigInt transcription, across

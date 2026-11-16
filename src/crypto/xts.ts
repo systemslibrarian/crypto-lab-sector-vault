@@ -16,9 +16,10 @@
  * Failure codes are deliberately almost empty. Input validation rejects a data
  * unit too short to encrypt, a key of the wrong length, or identical key halves.
  * XTS still has NOTHING it can say about a ciphertext an adversary has edited. There is
- * no MAC, no tag, no redundancy: SP 800-38E section 4 states the mode provides
- * confidentiality only and "does not provide authentication of the data or its
- * source". The absence in this enum is the exhibit.
+ * no MAC, no tag, no redundancy: the SP 800-38E Abstract states the mode is for
+ * confidentiality only and that it "does not provide authentication of the data
+ * or its source", and §3 "Introduction" makes the same point in other words
+ * (§4 is "Conformance"). The absence in this enum is the exhibit.
  */
 import { unsafe } from '@noble/ciphers/aes.js';
 import { mulAlpha } from './gf128.js';
@@ -173,7 +174,9 @@ export function createXtsCipher(key: XtsKeyPair): XtsCipher {
       }
 
       if (tail !== 0) {
-        // Ciphertext stealing (SP 800-38E section 5.3.2 / IEEE 1619 5.3):
+        // Ciphertext stealing, specified in IEEE Std 1619-2007 and approved by
+        // reference in SP 800-38E, whose own §5 covers only the ordering
+        // convention for this case:
         // the second-to-last plaintext block is encrypted under tweak m-1, its
         // first `tail` bytes become the FINAL short ciphertext block, and its
         // remaining bytes are stolen back to pad the short plaintext block,

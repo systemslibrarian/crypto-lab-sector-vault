@@ -109,6 +109,7 @@ export function scopeCard(): HTMLElement {
         ]),
         h('li', { text: 'IEEE Std 1619-2007 — Standard for Cryptographic Protection of Data on Block-Oriented Storage Devices, whose Annex B vectors this implementation is checked against.' }),
         h('li', { text: 'Rogaway (2004), "Efficient Instantiations of Tweakable Blockciphers and Refinements to Modes OCB and PMAC" — the XEX construction XTS is built on.' }),
+        h('li', { text: 'NIST SP 800-38A, Appendix D "Error Properties" — cited by act 2 for what a flipped ciphertext bit does under CBC: the bit positions in error reappear in the decryption of the succeeding block, and no block after that.' }),
         h('li', { text: 'RFC 5116 section 1.2 — the AEAD interface, and its explicit statement that anti-replay is not addressed by it. That sentence is why act 5 has three stages.' }),
       ]),
     ]),

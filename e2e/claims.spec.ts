@@ -242,6 +242,15 @@ test.describe('NEG-1: XTS reports nothing about an edited ciphertext', () => {
     // Every other sector is untouched: the damage cannot spread.
     const alarmTiles = await page.locator('.sector-tile .tile-state.s-alarm').count();
     expect(alarmTiles).toBe(1);
+
+    // The CBC contrast in the explanation has to describe CBC correctly: a
+    // flipped ciphertext bit garbles its own block and flips the same bit
+    // position in the NEXT one, and stops there — SP 800-38A, Appendix D.
+    const why = page.locator('#act-flip details.more');
+    await expect(why).toContainText('one block further, and no further than that');
+    await expect(why).toContainText('the same bit position flips in the block after it');
+    await expect(why).toContainText('every block beyond that is untouched');
+    await expect(why).not.toContainText('every following block');
   });
 
   test('the read-out and the failure-code table name the same three XTS codes', async ({ page }) => {

@@ -92,7 +92,7 @@ export function mountBitFlipPanel(ctx: LabContext): { root: HTMLElement; refresh
       h('details', { class: 'more' }, [
         h('summary', { text: 'Why exactly one block, and not the rest of the sector' }),
         h('p', {
-          text: 'A CBC-style chained mode would carry the damage forward into every following block. XTS chains nothing: block j is AES-K1(P ⊕ T_j) ⊕ T_j, and T_j depends only on the sector number and j. That independence is what makes a disk usable — you can read block 900 without decrypting the 899 before it — and it is also why a one-bit edit is a one-block edit, indistinguishable from data that was simply always that way.',
+          text: 'A CBC-style chained mode would carry the damage one block further, and no further than that: the edited block decrypts to noise, the same bit position flips in the block after it, and every block beyond that is untouched (NIST SP 800-38A, Appendix D). XTS carries it nowhere at all, because XTS chains nothing: block j is AES-K1(P ⊕ T_j) ⊕ T_j, and T_j depends only on the sector number and j. That independence is what makes a disk usable — you can read block 900 without decrypting the 899 before it — and it is also why a one-bit edit is a one-block edit, indistinguishable from data that was simply always that way.',
         }),
       ]),
     ]);
