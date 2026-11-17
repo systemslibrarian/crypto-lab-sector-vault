@@ -1,8 +1,11 @@
 /**
  * XTS-AES — NIST SP 800-38E / IEEE Std 1619-2007.
  *
- * The single-block AES call comes from @noble/ciphers' audited `unsafe`
- * block API (`expandKeyLE` + `encryptBlock`/`decryptBlock`). That is the
+ * The single-block AES call comes from @noble/ciphers' `unsafe` block API
+ * (`expandKeyLE` + `encryptBlock`/`decryptBlock`). The library's latest audit is
+ * "at version 1.0.0, in Sep 2024, independently, by [cure53]"; the pin here is
+ * ^2.4.0, past it — what this file is checked against instead is the
+ * IEEE Std 1619-2007 Annex B / NIST SP 800-38E vectors (xts.test.ts). That is the
  * deliberate split: the block cipher is a vetted primitive nobody should
  * re-implement for a teaching demo, while the XEX tweaking, the alpha ladder
  * and the ciphertext stealing — the parts this lab exists to expose — are

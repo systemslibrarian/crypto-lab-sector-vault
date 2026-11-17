@@ -62,7 +62,7 @@ export function scopeCard(): HTMLElement {
         text: 'XTS-AES-128 per NIST SP 800-38E and IEEE Std 1619-2007: XEX tweaking, the GF(2^128) alpha ladder and ciphertext stealing, all written out in this repository and verified against the standard’s own published vectors.',
       }),
       h('li', {
-        text: 'The AES block cipher itself comes from @noble/ciphers, an audited implementation, through its raw single-block API. The mode around it is this lab’s; the primitive inside it is not, deliberately.',
+        text: 'The AES block cipher itself comes from @noble/ciphers through its raw single-block API — a library whose latest audit is “at version 1.0.0, in Sep 2024, independently, by cure53”, while this lab pins ^2.4.0. The mode around it is this lab’s; the primitive inside it is not, deliberately.',
       }),
       h('li', {
         text: 'The AES-GCM in act 5 is the browser’s own WebCrypto implementation. Every BAD_TAG in that table is a tag your browser refused to verify.',

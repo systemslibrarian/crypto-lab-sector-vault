@@ -32,8 +32,10 @@ monotonic version — bound as associated data.
 tweaking and the ciphertext stealing are written out in `src/crypto/`, because
 they are the thing this lab teaches and hiding them in a library would defeat
 the point. The AES block cipher underneath is
-[`@noble/ciphers`](https://github.com/paulmillr/noble-ciphers)' audited raw
-single-block API (`expandKeyLE` + `encryptBlock`/`decryptBlock`) — that library
+[`@noble/ciphers`](https://github.com/paulmillr/noble-ciphers)' raw single-block
+API (`expandKeyLE` + `encryptBlock`/`decryptBlock`); that library's latest audit
+is "at version 1.0.0, in Sep 2024, independently, by [cure53]" and this lab pins
+`^2.4.0`, which that audit does not cover. That library
 exposes ECB but has no XTS, so building XEX over its vetted block primitive is
 both the honest option and the only one. WebCrypto was not usable for the
 primitive: it exposes no raw single-block AES, and the usual workaround (AES-CBC
